@@ -1,49 +1,10 @@
 # 생활기록부 분석기 (School Record Analyzer)
 
-고2 학생의 생활기록부를 **1학년 기록 중심**으로 분석하고, 근거가 포함된 Markdown 보고서를 생성하는 프로젝트입니다.
+고2 학생의 생활기록부를 **1학년 기록 중심**으로 분석하고, 근거가 포함된 Markdown 보고서를 생성합니다.
 
-## 1. 핵심 기능
-- PDF/TXT 또는 Google Drive 공유 링크 입력
-- 섹션 파싱: 교과성적, 세특, 창체, 행특, 출결
-- 규칙 엔진 적용
-  - 개인정보 마스킹
-  - 수상/자격증/진로희망 등 핵심 평가 근거 제외
-  - 고2 모드(1학년 기록 중심) 필터
-- 템플릿 기반 근거 포함 보고서 생성
-- Streamlit Pages 기반 UI 실행 지원
+## 빠른 시작 (처음 사용자용)
 
----
-
-## 2. 프로젝트 구조
-```text
-.
-├── app.py                          # Streamlit 메인 홈
-├── pages/
-│   ├── 1_Record_Analyzer.py        # 분석 실행 페이지
-│   └── 2_Rule_Preview.py           # 규칙 적용 결과 점검 페이지
-├── src/school_record_analyzer/
-│   ├── parser.py                   # PDF/TXT/Drive 입력 파싱
-│   ├── rules.py                    # exclusion + grade2 규칙 엔진
-│   ├── renderer.py                 # 보고서 렌더러
-│   └── drive.py                    # Google Drive 링크 처리
-├── docs/
-│   ├── report_template.md
-│   ├── exclusion_rules.yaml
-│   ├── grade2_mode.yaml
-│   ├── student_record.schema.json
-│   └── google_drive_integration.md
-└── tests/
-    ├── fixtures/
-    ├── golden/
-    ├── test_pipeline.py
-    └── test_drive.py
-```
-
----
-
-## 3. 설치 및 실행
-
-### 3-1) 로컬 실행 환경 준비
+### 0) 준비
 ```bash
 python -m venv .venv
 source .venv/bin/activate
@@ -51,23 +12,57 @@ pip install -e .
 pip install streamlit pytest
 ```
 
-> PDF 입력을 사용하려면 `pypdf`를 추가 설치하세요.
+> PDF 입력까지 사용하려면:
 ```bash
 pip install pypdf
 ```
 
-### 3-2) Pages UI 실행
+### 1) 실행 (아래 둘 중 하나)
+```bash
+./run_app.sh
+```
+또는
 ```bash
 streamlit run app.py
 ```
 
-실행 후 브라우저에서:
-- **Record Analyzer**: 파일 업로드/경로/Drive 링크로 보고서 생성
-- **Rule Preview**: 텍스트 입력 후 규칙 적용 결과 확인
+### 2) 브라우저에서 바로 분석
+앱 첫 화면(`app.py`)에 이미 **분석 실행 탭**이 있으므로, pages를 이동하지 않아도 됩니다.
+
+1. PDF/TXT 업로드 또는 Drive 링크 입력
+2. `분석 실행` 클릭
+3. 생성된 보고서 확인 후 `보고서 다운로드 (.md)` 클릭
 
 ---
 
-## 4. 코드 기반 사용 예시
+## 프로젝트 개요
+- 입력: PDF/TXT 로컬 파일, Google Drive 공유 링크
+- 출력: 근거 포함 Markdown 보고서
+- 분석 축: 학업역량/진로역량/공동체역량(필요 시 4축)
+- 규칙: 마스킹, 제외 키워드 필터, 1학년 기록 중심 필터
+
+---
+
+## 폴더 구조
+```text
+.
+├── app.py                          # 첫 화면에서 바로 분석 가능한 메인 앱
+├── run_app.sh                      # 원클릭 실행 스크립트
+├── pages/
+│   ├── 1_Record_Analyzer.py        # 분석 전용 페이지
+│   └── 2_Rule_Preview.py           # 규칙 확인 페이지
+├── src/school_record_analyzer/
+│   ├── parser.py
+│   ├── rules.py
+│   ├── renderer.py
+│   └── drive.py
+├── docs/
+└── tests/
+```
+
+---
+
+## 코드로 직접 사용하는 방법
 ```python
 from school_record_analyzer.parser import parse_record_file
 from school_record_analyzer.rules import RuleEngine
@@ -77,29 +72,30 @@ parsed = parse_record_file("tests/fixtures/record_a.txt")
 engine = RuleEngine.from_files("docs/exclusion_rules.yaml", "docs/grade2_mode.yaml")
 payload = engine.apply(parsed.sections)
 report = render_report(payload, "docs/report_template.md")
-
 print(report)
 ```
 
-Google Drive 링크 예시:
+Google Drive 링크 입력 예시:
 ```python
 parsed = parse_record_file("https://drive.google.com/file/d/<FILE_ID>/view?usp=sharing")
 ```
 
 ---
 
-## 5. 테스트
+## 테스트
 ```bash
 PYTHONPATH=src pytest -q
 ```
 
-- `test_pipeline.py`: 파싱/규칙/골든 출력 검증
-- `test_drive.py`: Drive 링크 처리 로직 검증
+- `tests/test_pipeline.py`: 파서/규칙/골든 출력 검증
+- `tests/test_drive.py`: Drive 링크 처리 검증
 
 ---
 
-## 6. 운영 가이드
-- 개인정보가 포함된 원문은 최소 권한으로 접근 관리하세요.
-- 보고서 결과는 반드시 규칙 엔진 통과 후 사용하세요.
-- 분석 품질은 점수화보다 **원문 근거의 정확성/추적성**을 우선하세요.
-
+## 문제 해결
+- `streamlit: command not found`
+  - `pip install streamlit` 실행 후 재시도
+- PDF 입력에서 오류 발생
+  - `pip install pypdf` 설치 여부 확인
+- 권한 문제로 Drive 다운로드 실패
+  - 공유 설정이 "링크가 있는 사용자(뷰어)"인지 확인
