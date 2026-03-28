@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/student_record.schema.json",
+  "title": "StudentRecord",
+  "type": "object",
+  "required": ["student", "grade_focus", "sections", "meta"],
+  "properties": {
+    "student": {
+      "type": "object",
+      "required": ["student_id_masked", "name_masked"],
+      "properties": {
+        "student_id_masked": {"type": "string"},
+        "name_masked": {"type": "string"},
+        "school_masked": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "grade_focus": {
+      "type": "object",
+      "required": ["target_grade", "focus_year"],
+      "properties": {
+        "target_grade": {"type": "integer", "enum": [2]},
+        "focus_year": {"type": "integer", "enum": [1]}
+      },
+      "additionalProperties": false
+    },
+    "sections": {
+      "type": "object",
+      "required": ["subject_scores", "subject_details", "creative_activities", "behavioral_notes", "attendance"],
+      "properties": {
+        "subject_scores": {"$ref": "#/$defs/sectionItems"},
+        "subject_details": {"$ref": "#/$defs/sectionItems"},
+        "creative_activities": {"$ref": "#/$defs/sectionItems"},
+        "behavioral_notes": {"$ref": "#/$defs/sectionItems"},
+        "attendance": {"$ref": "#/$defs/sectionItems"}
+      },
+      "additionalProperties": false
+    },
+    "meta": {
+      "type": "object",
+      "required": ["awards", "certificates", "career_hopes"],
+      "properties": {
+        "awards": {"type": "array", "items": {"type": "string"}},
+        "certificates": {"type": "array", "items": {"type": "string"}},
+        "career_hopes": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    }
+  },
+  "$defs": {
+    "sectionItems": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["text", "source_lines"],
+        "properties": {
+          "text": {"type": "string"},
+          "source_lines": {
+            "type": "array",
+            "items": {"type": "integer", "minimum": 1},
+            "minItems": 1
+          },
+          "year": {"type": "integer"},
+          "semester": {"type": "integer", "minimum": 1, "maximum": 2}
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}
