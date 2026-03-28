@@ -3,6 +3,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 import re
+from urllib.parse import urlparse
+
+from .drive import download_drive_file
 
 
 SECTION_PATTERNS = {
@@ -20,6 +23,18 @@ class ParsedRecord:
     raw_lines: list[str]
 
 
+def _resolve_source_to_path(path_or_url: str | Path) -> Path:
+    if isinstance(path_or_url, Path):
+        return path_or_url
+
+    parsed = urlparse(path_or_url)
+    if parsed.scheme in {"http", "https"}:
+        if "google.com" in parsed.netloc:
+            return download_drive_file(path_or_url)
+        raise ValueError("현재는 Google Drive URL만 지원합니다.")
+    return Path(path_or_url)
+
+
 def _read_text(path: Path) -> str:
     if path.suffix.lower() == ".txt":
         return path.read_text(encoding="utf-8")
@@ -33,9 +48,9 @@ def _read_text(path: Path) -> str:
     raise ValueError(f"지원하지 않는 확장자: {path.suffix}")
 
 
-def parse_record_file(path: str | Path) -> ParsedRecord:
-    p = Path(path)
-    text = _read_text(p)
+def parse_record_file(path_or_url: str | Path) -> ParsedRecord:
+    resolved_path = _resolve_source_to_path(path_or_url)
+    text = _read_text(resolved_path)
     lines = [ln.strip() for ln in text.splitlines() if ln.strip()]
 
     sections = {key: [] for key in SECTION_PATTERNS}
