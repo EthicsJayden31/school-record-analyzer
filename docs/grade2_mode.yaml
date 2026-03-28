@@ -1,0 +1,6 @@
+version: 1
+target_grade: 2
+focus_year: 1
+default_axis: [학업역량, 진로역량, 공동체역량]
+allow_axis4: true
+include_only_years: [1]

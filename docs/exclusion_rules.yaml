@@ -1,0 +1,14 @@
+version: 1
+mask_patterns:
+  - '(?i)학생\s*이름\s*:\s*\S+'
+  - '(?i)학번\s*:\s*\S+'
+  - '(?i)주민등록번호\s*:\s*\S+'
+exclude_as_core_evidence_keywords:
+  - 수상
+  - 자격증
+  - 진로희망
+  - 희망진로
+exclude_sections:
+  - awards
+  - certificates
+  - career_hopes
